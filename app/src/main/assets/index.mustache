@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>CodeNCode Server</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; border-bottom: 2px solid #e8eaed; padding-bottom: 10px; }
+        .file-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f1f3f4; transition: background 0.2s; }
+        .file-item:hover { background: #f8f9fa; }
+        .file-link { text-decoration: none; color: #3c4043; font-weight: 500; flex-grow: 1; }
+        .file-size { color: #70757a; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Available Files</h1>
+    <div class="list">
+        {{#files}} <div class="file-item">
+            <a class="file-link" href="/get-file?id={{id}}">{{name}}</a>
+            <span class="file-size">{{size}}</span>
+        </div>
+        {{/files}}
+        {{^files}} <p>No files found on device.</p>
+        {{/files}}
+    </div>
+</div>
+</body>
+</html>
