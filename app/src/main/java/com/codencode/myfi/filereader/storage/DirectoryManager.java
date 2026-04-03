@@ -4,14 +4,15 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.DocumentsContract;
+import android.util.Log;
 
 import com.codencode.myfi.filereader.model.FileEntry;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DirectoryManager {
+    private static final String TAG = "DirectoryManager";
     private final Context context;
 
     public DirectoryManager(Context context) {
@@ -60,7 +61,8 @@ public class DirectoryManager {
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Failed to list files for URI: " + rootUri, e);
+            return new ArrayList<>(); // Return empty list so app doesn't crash
         }
 
         return fileList;
