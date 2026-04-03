@@ -36,42 +36,15 @@ public class FileServer extends NanoHTTPD {
     @Override
     public Response serve(IHTTPSession session) {
         String uri = session.getUri();
-        Method method = session.getMethod();
 
 
         if(uri.equals("/")) {
-            /*
-            StringBuilder fileNameBuilder = new StringBuilder("<ul>");
-            // We use a simple loop with an index so we can identify the file later
-            for (int i = 0; i < fileEntryList.size(); i++) {
-                FileEntry entry = fileEntryList.get(i);
-                long sizeKB = entry.getSizeBytes() / 1024;
-
-                // The magic happens here: we add a link with a query parameter "?id=0", "?id=1", etc.
-                fileNameBuilder.append("<li>")
-                        .append("<a href='/get-file?id=").append(i).append("'>")
-                        .append(entry.getName())
-                        .append("</a>")
-                        .append(" (").append(sizeKB).append(" KB)</li>");
-            }
-            String htmlResponse = "<html>" +
-                    "<head> <title> Android Server </title> </head>" +
-                    "<body>" +
-                    "<h1>Hello World!</h1>" +
-                    fileNameBuilder +
-                    "<p>This page is being served directly from an Android device.</p>" +
-                    "</body>" +
-                    "</html>";
-            return newFixedLengthResponse(Response.Status.OK, "text/html", htmlResponse);
-
-             */
 
             // 1. Prepare the Data Map
             Map<String, Object> scope = new HashMap<>();
 
             // Mustache needs a list of objects/maps it can read
-            // We'll pass your fileEntryList directly
-            // (Ensure your FileEntry has 'getName()' and 'getSizeBytes()' or public fields)
+            // We'll pass fileEntryList directly
             scope.put("files", fileEntryList);
 
 
@@ -146,8 +119,6 @@ public class FileServer extends NanoHTTPD {
                     Response response = newFixedLengthResponse(Response.Status.OK, mimeType, bufferedStream, fileSize);
 
                     // 2. Add the Content-Disposition header
-                    // 'attachment' tells the browser to download it instead of trying to play it in-browser
-                    // 'filename="..."' tells the browser what to call the saved file
                     response.addHeader("Content-Disposition", "attachment; filename=\"" + selectedEntry.getName() + "\"");
                     return response;
                 } catch (FileNotFoundException e) {
