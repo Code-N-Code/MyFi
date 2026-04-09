@@ -11,9 +11,12 @@
     <TextView
         android:id="@+id/tv_file_list"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
         android:padding="16dp"
-        android:hint="File names will appear here..."
+        android:hint="Please select a folder to share..."
+        android:textAlignment="center"
+        android:layout_above="@id/imgQRCode"
         />
 
     <ImageView
@@ -29,8 +32,9 @@
         android:id="@+id/btn_select_folder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
         android:text="Select Folder"
-        android:layout_below="@id/tv_file_list"
+        android:layout_below="@id/imgQRCode"
         android:layout_centerHorizontal="true"/>
 
     <ImageButton

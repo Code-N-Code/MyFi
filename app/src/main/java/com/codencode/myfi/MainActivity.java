@@ -120,12 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
         helloWorldServer.setFileMap(fileEntries);
 
-        StringBuilder builder = new StringBuilder("Files found:\n\n");
-        for (FileEntry fileEntry : fileEntries) {
-            builder.append("• ").append(fileEntry).append("\n");
-            Log.i("Information>>> :", fileEntry.toString());
-        }
-        tvFileList.setText(builder.toString());
+        tvFileList.setText("" + fileEntries.size() + " files are being shared.");
     }
 
     @Override
