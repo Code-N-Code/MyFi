@@ -71,6 +71,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         helloWorldServer = new FileServer(PORT, this);
+        helloWorldServer.setEventListener(
+                percentage -> {
+                    if(percentage == 100) {
+                        tvFileList.setText("File transfer Complete");
+                    } else {
+                        tvFileList.setText("File transfer in progress: " + percentage + "%");
+                    }
+                }
+        );
         startServer();
     }
 

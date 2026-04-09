@@ -18,6 +18,7 @@ public class FileServer extends NanoHTTPD {
     private final Context context;
     private final List<FileEntry> fileEntryList;
     private final Map<String, RouteHandler> routes = new HashMap<>();
+    private ServerEventListener eventListener;
 
     public FileServer(int port, Context context) {
         super(port);
@@ -29,7 +30,12 @@ public class FileServer extends NanoHTTPD {
     private void initializeRoutes() {
         routes.put("/", new IndexHandler(context, fileEntryList));
         routes.put("/download", new DownloadHandler(context, fileEntryList));
-        routes.put("/get-file", new FileStreamHandler(context, fileEntryList));
+        routes.put("/get-file", new FileStreamHandler(context, fileEntryList,
+                percentage -> {
+                    if (eventListener != null) {
+                        eventListener.onDownloadProgress(percentage);
+                    }
+                }));
     }
 
     @Override
@@ -47,6 +53,10 @@ public class FileServer extends NanoHTTPD {
     public void setFileMap(List<FileEntry> fileList) {
         this.fileEntryList.clear();
         this.fileEntryList.addAll(fileList);
+    }
+
+    public void setEventListener(ServerEventListener eventListener) {
+        this.eventListener = eventListener;
     }
 
 }

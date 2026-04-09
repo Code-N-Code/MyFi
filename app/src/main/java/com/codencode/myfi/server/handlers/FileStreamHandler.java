@@ -3,10 +3,14 @@ package com.codencode.myfi.server.handlers;
 import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.codencode.myfi.filereader.model.FileEntry;
 import com.codencode.myfi.server.RouteHandler;
+import com.codencode.myfi.ui.ProgressCallback;
+import com.codencode.myfi.utils.ProgressInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
@@ -19,10 +23,12 @@ import fi.iki.elonen.NanoHTTPD;
 public class FileStreamHandler implements RouteHandler {
     private final Context context;
     private final List<FileEntry> fileEntryList;
+    private final ProgressCallback uiCallback;
 
-    public FileStreamHandler(Context context, List<FileEntry> fileEntryList) {
+    public FileStreamHandler(Context context, List<FileEntry> fileEntryList, ProgressCallback uiCallback) {
         this.context = context;
         this.fileEntryList = fileEntryList;
+        this.uiCallback = uiCallback;
     }
 
     @Override
@@ -46,6 +52,20 @@ public class FileStreamHandler implements RouteHandler {
                 // 2. Get the actual size for better performance (Fixed Length)
                 long fileSize = selectedEntry.getSizeBytes();
 
+                ProgressInputStream progressInputStream = new ProgressInputStream(bufferedStream, selectedEntry.getSizeBytes(),
+                        new ProgressInputStream.ProgressListener() {
+                            @Override
+                            public void onProgressUpdate(int percentage, long bytesRead, long totalSize) {
+                                new Handler(Looper.getMainLooper()).post(
+                                        () -> {
+                                            if(uiCallback != null) {
+                                                uiCallback.updateProgressBar(percentage);
+                                            }
+                                        }
+                                );
+                            }
+                        });
+
                 // 3. Determine the MIME type (e.g., video/mp4)
                 String mimeType = "application/octet-stream"; // Default
                 String extension = android.webkit.MimeTypeMap.getFileExtensionFromUrl(selectedEntry.getName());
@@ -57,7 +77,7 @@ public class FileStreamHandler implements RouteHandler {
                 }
                 // Return the file stream
                 Log.i("CodeNCode", mimeType);
-                NanoHTTPD.Response response = newFixedLengthResponse(NanoHTTPD.Response.Status.OK, mimeType, bufferedStream, fileSize);
+                NanoHTTPD.Response response = newFixedLengthResponse(NanoHTTPD.Response.Status.OK, mimeType, progressInputStream, fileSize);
 
                 // 2. Add the Content-Disposition header
                 response.addHeader("Content-Disposition", "attachment; filename=\"" + selectedEntry.getName() + "\"");
