@@ -40,7 +40,6 @@ public final class FileEntry {
 
     public String getSize() {
         return FileUtility.formatSize(sizeBytes);
-//        return (float) sizeBytes /1024;
     }
 
     @NonNull
