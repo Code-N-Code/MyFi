@@ -4,9 +4,11 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     ImageButton serverOnOffButton;
     ImageView qrCodeView;
+    ProgressBar transferProgressBar;
 
 
     @Override
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         serverOnOffButton = findViewById(R.id.server_on_off_button);
 
         qrCodeView = findViewById(R.id.imgQRCode);
+        transferProgressBar = findViewById(R.id.transfer_progress_bar);
 
         // 1. Initialize the handler
         folderPickerHandler = new FolderPickerHandler(
@@ -75,12 +79,20 @@ public class MainActivity extends AppCompatActivity {
                 percentage -> {
                     if(percentage == 100) {
                         tvFileList.setText("File transfer Complete");
+                        transferProgressBar.setVisibility(View.GONE);
                     } else {
                         tvFileList.setText("File transfer in progress: " + percentage + "%");
+                        transferProgressBar.setVisibility(View.VISIBLE);
+                        transferProgressBar.setProgress(percentage);
                     }
                 }
         );
+        initUi();
         startServer();
+    }
+
+    void initUi() {
+        transferProgressBar.setVisibility(View.GONE);
     }
 
     public void startServer() {

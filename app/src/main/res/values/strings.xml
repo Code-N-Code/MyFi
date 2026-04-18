@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MyFi</string>
     <string name="server_on_off_button">Server On/Off Button</string>
+    <string name="appName">MyFi</string>
 </resources>
