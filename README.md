@@ -26,7 +26,7 @@ Based on the project's configuration (v8.13.2):
 ## Project Architecture
 
 The project uses a Router/Handler pattern to separate server logic from routing:
-
+```
 com.codencode.myfi
 ├── filereader/         # Logic for SAF and directory scanning
 ├── server/             # NanoHTTPD Server implementation
@@ -34,6 +34,8 @@ com.codencode.myfi
 │   ├── RouteHandler    # Interface for all endpoints
 │   └── FileServer      # The main traffic controller (Router)
 └── ui/                 # Activity and Fragment logic
+```
+
 
 ## Installation & Setup
 
