@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean serverState = false;
 
     private DirectoryManager directoryManager;
-    private TextView tvFileList;
+    private TextView tvFileList, tvServerStatus;
     private FolderPickerHandler folderPickerHandler;
 
     ImageButton serverOnOffButton;
@@ -48,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize UI and Logic
         directoryManager = new DirectoryManager(this);
-        tvFileList = findViewById(R.id.tv_file_list);
+        //tvFileList = findViewById(R.id.tv_file_list);
+        tvServerStatus = findViewById(R.id.serverStatus);
         Button btnSelectFolder = findViewById(R.id.btn_select_folder);
         serverOnOffButton = findViewById(R.id.server_on_off_button);
 
@@ -78,10 +79,12 @@ public class MainActivity extends AppCompatActivity {
         helloWorldServer.setEventListener(
                 percentage -> {
                     if(percentage == 100) {
-                        tvFileList.setText("File transfer Complete");
+                        //tvFileList.setText("File transfer Complete");
+                        tvServerStatus.setText("Online (Transfer Complete)");
                         transferProgressBar.setVisibility(View.GONE);
                     } else {
-                        tvFileList.setText("File transfer in progress: " + percentage + "%");
+                        //tvFileList.setText("File transfer in progress: " + percentage + "%");
+                        tvServerStatus.setText("Online (Transfer in Progress)");
                         transferProgressBar.setVisibility(View.VISIBLE);
                         transferProgressBar.setProgress(percentage);
                     }
@@ -135,13 +138,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI(List<FileEntry> fileEntries) {
         if (fileEntries.isEmpty()) {
-            tvFileList.setText("No files found in this folder.");
+            //tvFileList.setText("No files found in this folder.");
             return;
         }
 
         helloWorldServer.setFileMap(fileEntries);
 
-        tvFileList.setText("" + fileEntries.size() + " files are being shared.");
+        //tvFileList.setText("" + fileEntries.size() + " files are being shared.");
     }
 
     @Override
