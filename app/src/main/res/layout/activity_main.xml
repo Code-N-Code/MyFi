@@ -112,6 +112,7 @@
                     <View
                         android:layout_width="12dp"
                         android:layout_height="12dp"
+                        android:id="@+id/server_status_view"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:background="@android:color/holo_green_light" />

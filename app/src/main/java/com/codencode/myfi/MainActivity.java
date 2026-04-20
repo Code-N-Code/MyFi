@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton serverOnOffButton;
     ImageView qrCodeView;
     ProgressBar transferProgressBar;
+    View serverStatusView;
 
 
     @Override
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         qrCodeView = findViewById(R.id.imgQRCode);
         transferProgressBar = findViewById(R.id.transfer_progress_bar);
+        serverStatusView = findViewById(R.id.server_status_view);
 
         // 1. Initialize the handler
         folderPickerHandler = new FolderPickerHandler(
@@ -102,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             helloWorldServer.start();
             serverState = true;
+            serverStatusView.setBackgroundResource(android.R.color.holo_green_light);
             serverOnOffButton.setImageResource(R.drawable.power_on_state);
             Bitmap bitmap = NetworkUtility.generateQRCode("http://" + NetworkUtility.getHotspotIPAddress() + ":" + PORT);
             qrCodeView.setImageBitmap(bitmap);
@@ -111,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             serverState = false;
             serverOnOffButton.setImageResource(R.drawable.power_off_state);
+            serverStatusView.setBackgroundResource(android.R.color.holo_red_light);
             throw new RuntimeException(e);
         }
     }
@@ -120,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
             helloWorldServer.stop();
             serverState = false;
             serverOnOffButton.setImageResource(R.drawable.power_off_state);
+            serverStatusView.setBackgroundResource(android.R.color.holo_red_light);
             Log.d("NanoHTTPD", "Server stopped.");
         }
     }
