@@ -26,8 +26,11 @@ public class FileResponseFactory {
             InputStream bufferedStream = new BufferedInputStream(rawStream, BUFFER_SIZE);
 
             ProgressInputStream progressInputStream = new ProgressInputStream(bufferedStream, entry.getSizeBytes(),
-                    (percentage, bytesRead, totalSize) -> new Handler(Looper.getMainLooper()).post(() -> {
-                        if (uiCallback != null) uiCallback.updateProgressBar(percentage);
+                    (percentage, bytesRead, totalSize, speedBytesPerSec) -> new Handler(Looper.getMainLooper()).post(() -> {
+                        if (uiCallback != null) {
+                            String speedText = FileUtility.formatSize((long) speedBytesPerSec) + "/s";
+                            uiCallback.updateProgressBar(percentage, speedText);
+                        }
                     }));
 
             String mimeType = FileUtility.getMimeType(entry.getName());
