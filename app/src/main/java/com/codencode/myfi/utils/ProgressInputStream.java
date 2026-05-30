@@ -9,9 +9,13 @@ public class ProgressInputStream extends FilterInputStream {
     private final long totalSize;
     private int lastNotifiedPercent = -1;
     private final ProgressListener listener;
+    
+    private long startTime = -1;
+    private long lastTime = -1;
+    private long lastBytes = 0;
 
     public interface ProgressListener {
-        void onProgressUpdate(int percentage, long bytesRead, long totalSize);
+        void onProgressUpdate(int percentage, long bytesRead, long totalSize, double speedBytesPerSec);
     }
 
     public ProgressInputStream(InputStream in, long totalSize, ProgressListener listener) {
@@ -21,26 +25,48 @@ public class ProgressInputStream extends FilterInputStream {
     }
 
     @Override
+    public int read() throws IOException {
+        int b = super.read();
+        if (b != -1) {
+            updateProgress(1);
+        }
+        return b;
+    }
+
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        // Let the actual stream read the data
         int bytesReadThisTime = super.read(b, off, len);
-
         if (bytesReadThisTime != -1) {
-            totalBytesRead += bytesReadThisTime;
-
-            // Calculate progress safely to avoid division by zero
-            if (totalSize > 0) {
-                int currentPercent = (int) ((totalBytesRead * 100) / totalSize);
-
-                // Only notify the UI if the percentage has ticked up by at least 1%
-                if (currentPercent > lastNotifiedPercent) {
-                    lastNotifiedPercent = currentPercent;
-                    if (listener != null) {
-                        listener.onProgressUpdate(currentPercent, totalBytesRead, totalSize);
-                    }
-                }
-            }
+            updateProgress(bytesReadThisTime);
         }
         return bytesReadThisTime;
+    }
+
+    private void updateProgress(int bytesReadNow) {
+        long currentTime = System.currentTimeMillis();
+        if (startTime == -1) {
+            startTime = currentTime;
+            lastTime = currentTime;
+        }
+
+        totalBytesRead += bytesReadNow;
+
+        // Calculate progress percentage
+        int currentPercent = (totalSize > 0) ? (int) ((totalBytesRead * 100) / totalSize) : 0;
+
+        // Notify if percentage changed OR if a significant amount of time has passed (e.g. 500ms) for speed updates
+        long timeDiff = currentTime - lastTime;
+        if (timeDiff >= 750) {
+            
+            double speed = (totalBytesRead - lastBytes) / (timeDiff / 1000.0);
+
+            lastNotifiedPercent = currentPercent;
+            lastTime = currentTime;
+            lastBytes = totalBytesRead;
+
+            if (listener != null) {
+                listener.onProgressUpdate(currentPercent, totalBytesRead, totalSize, speed);
+            }
+        }
     }
 }

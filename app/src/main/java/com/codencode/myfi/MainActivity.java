@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean serverState = false;
 
     private DirectoryManager directoryManager;
-    private TextView tvFileList, tvServerStatus;
+    private TextView tvFileList, tvServerStatus, tvTransferSpeed;
     private FolderPickerHandler folderPickerHandler;
 
     ImageButton serverOnOffButton;
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         directoryManager = new DirectoryManager(this);
         //tvFileList = findViewById(R.id.tv_file_list);
         tvServerStatus = findViewById(R.id.serverStatus);
+        tvTransferSpeed = findViewById(R.id.tv_transfer_speed);
         Button btnSelectFolder = findViewById(R.id.btn_select_folder);
         serverOnOffButton = findViewById(R.id.server_on_off_button);
 
@@ -79,16 +80,19 @@ public class MainActivity extends AppCompatActivity {
         });
         helloWorldServer = new FileServer(PORT, this);
         helloWorldServer.setEventListener(
-                percentage -> {
+                (percentage, speed) -> {
                     if(percentage == 100) {
                         //tvFileList.setText("File transfer Complete");
                         tvServerStatus.setText("Online (Transfer Complete)");
                         transferProgressBar.setVisibility(View.GONE);
+                        tvTransferSpeed.setVisibility(View.GONE);
                     } else {
                         //tvFileList.setText("File transfer in progress: " + percentage + "%");
                         tvServerStatus.setText("Online (Transfer in Progress)");
                         transferProgressBar.setVisibility(View.VISIBLE);
                         transferProgressBar.setProgress(percentage);
+                        tvTransferSpeed.setVisibility(View.VISIBLE);
+                        tvTransferSpeed.setText(speed);
                     }
                 }
         );
@@ -98,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
     void initUi() {
         transferProgressBar.setVisibility(View.GONE);
+        tvTransferSpeed.setVisibility(View.GONE);
     }
 
     public void startServer() {

@@ -31,9 +31,9 @@ public class FileServer extends NanoHTTPD {
         routes.put("/", new IndexHandler(context, fileEntryList));
         routes.put("/download", new DownloadHandler(context, fileEntryList));
         routes.put("/get-file", new FileStreamHandler(context, fileEntryList,
-                percentage -> {
+                (percentage, speed) -> {
                     if (eventListener != null) {
-                        eventListener.onDownloadProgress(percentage);
+                        eventListener.onDownloadProgress(percentage, speed);
                     }
                 }));
     }

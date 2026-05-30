@@ -1,5 +1,5 @@
 package com.codencode.myfi.ui;
 
 public interface ProgressCallback {
-    void updateProgressBar(int percentage);
+    void updateProgressBar(int percentage, String speed);
 }
