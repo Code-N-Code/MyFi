@@ -1,5 +1,7 @@
 package com.codencode.myfi.utils;
 
+import android.webkit.MimeTypeMap;
+
 import java.util.Locale;
 
 public class FileUtility {
@@ -11,5 +13,17 @@ public class FileUtility {
         String pre = SIZE_FORMAT.charAt(exp - 1) + "";
         // Explicitly using Locale.US ensures a '.' is always used for decimals
         return String.format(Locale.US, "%.2f %sB", bytes / Math.pow(1024, exp), pre);
+    }
+
+    public static String getMimeType(String fileName) {
+        String mimeType = "application/octet-stream"; // Default
+        String extension = MimeTypeMap.getFileExtensionFromUrl(fileName);
+        if (extension != null) {
+            String newMimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+            if (newMimeType != null) {
+                mimeType = newMimeType;
+            }
+        }
+        return mimeType;
     }
 }
