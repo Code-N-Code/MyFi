@@ -2,7 +2,7 @@ package com.codencode.myfi.server;
 
 import android.content.Context;
 
-import com.codencode.myfi.filereader.model.FileEntry;
+import com.codencode.myfi.feature.send.domain.SharedFile;
 import com.codencode.myfi.server.handlers.DownloadHandler;
 import com.codencode.myfi.server.handlers.FileStreamHandler;
 import com.codencode.myfi.server.handlers.IndexHandler;
@@ -16,7 +16,7 @@ import fi.iki.elonen.NanoHTTPD;
 
 public class FileServer extends NanoHTTPD {
     private final Context context;
-    private final List<FileEntry> fileEntryList;
+    private final List<SharedFile> fileEntryList;
     private final Map<String, RouteHandler> routes = new HashMap<>();
     private ServerEventListener eventListener;
 
@@ -50,7 +50,7 @@ public class FileServer extends NanoHTTPD {
         return newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "404 - Page Not Found");
     }
 
-    public void setFileMap(List<FileEntry> fileList) {
+    public void setFileMap(List<SharedFile> fileList) {
         this.fileEntryList.clear();
         this.fileEntryList.addAll(fileList);
     }

@@ -4,7 +4,7 @@ import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
 
 import android.content.Context;
 
-import com.codencode.myfi.filereader.model.FileEntry;
+import com.codencode.myfi.feature.send.domain.SharedFile;
 import com.codencode.myfi.server.RouteHandler;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -21,9 +21,9 @@ import fi.iki.elonen.NanoHTTPD;
 
 public class IndexHandler implements RouteHandler {
     private final Context context;
-    private final List<FileEntry> fileEntryList;
+    private final List<SharedFile> fileEntryList;
 
-    public IndexHandler(Context context, List<FileEntry> fileEntryList) {
+    public IndexHandler(Context context, List<SharedFile> fileEntryList) {
         this.context = context;
         this.fileEntryList = fileEntryList;
     }

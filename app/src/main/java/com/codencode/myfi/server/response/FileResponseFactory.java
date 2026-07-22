@@ -6,7 +6,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.codencode.myfi.filereader.model.FileEntry;
+import com.codencode.myfi.feature.send.domain.SharedFile;
 import com.codencode.myfi.ui.ProgressCallback;
 import com.codencode.myfi.core.format.FileSizeFormatter;
 import com.codencode.myfi.core.format.MimeTypeResolver;
@@ -21,7 +21,7 @@ import fi.iki.elonen.NanoHTTPD;
 public class FileResponseFactory {
     private static final int BUFFER_SIZE = 128 * 1024; // 128 KB
 
-    public static NanoHTTPD.Response createResponse(Context context, FileEntry entry, ProgressCallback uiCallback) {
+    public static NanoHTTPD.Response createResponse(Context context, SharedFile entry, ProgressCallback uiCallback) {
         try {
             InputStream rawStream = context.getContentResolver().openInputStream(entry.getUri());
             InputStream bufferedStream = new BufferedInputStream(rawStream, BUFFER_SIZE);
