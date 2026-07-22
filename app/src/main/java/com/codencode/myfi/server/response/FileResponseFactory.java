@@ -8,8 +8,9 @@ import android.os.Looper;
 
 import com.codencode.myfi.filereader.model.FileEntry;
 import com.codencode.myfi.ui.ProgressCallback;
-import com.codencode.myfi.utils.FileUtility;
-import com.codencode.myfi.utils.ProgressInputStream;
+import com.codencode.myfi.core.format.FileSizeFormatter;
+import com.codencode.myfi.core.format.MimeTypeResolver;
+import com.codencode.myfi.core.io.ProgressInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
@@ -28,12 +29,12 @@ public class FileResponseFactory {
             ProgressInputStream progressInputStream = new ProgressInputStream(bufferedStream, entry.getSizeBytes(),
                     (percentage, bytesRead, totalSize, speedBytesPerSec) -> new Handler(Looper.getMainLooper()).post(() -> {
                         if (uiCallback != null) {
-                            String speedText = FileUtility.formatSize((long) speedBytesPerSec) + "/s";
+                            String speedText = FileSizeFormatter.format((long) speedBytesPerSec) + "/s";
                             uiCallback.updateProgressBar(percentage, speedText);
                         }
                     }));
 
-            String mimeType = FileUtility.getMimeType(entry.getName());
+            String mimeType = MimeTypeResolver.fromFileName(entry.getName());
             NanoHTTPD.Response response = newFixedLengthResponse(NanoHTTPD.Response.Status.OK, mimeType, progressInputStream, entry.getSizeBytes());
             response.addHeader("Content-Disposition", "attachment; filename=\"" + entry.getName() + "\"");
             return response;

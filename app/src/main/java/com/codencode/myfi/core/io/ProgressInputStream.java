@@ -1,4 +1,4 @@
-package com.codencode.myfi.utils;
+package com.codencode.myfi.core.io;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -9,7 +9,7 @@ public class ProgressInputStream extends FilterInputStream {
     private final long totalSize;
     private int lastNotifiedPercent = -1;
     private final ProgressListener listener;
-    
+
     private long startTime = -1;
     private long lastTime = -1;
     private long lastBytes = 0;
@@ -50,14 +50,10 @@ public class ProgressInputStream extends FilterInputStream {
         }
 
         totalBytesRead += bytesReadNow;
-
-        // Calculate progress percentage
         int currentPercent = (totalSize > 0) ? (int) ((totalBytesRead * 100) / totalSize) : 0;
 
-        // Notify if percentage changed OR if a significant amount of time has passed (e.g. 500ms) for speed updates
         long timeDiff = currentTime - lastTime;
         if (timeDiff >= 750) {
-            
             double speed = (totalBytesRead - lastBytes) / (timeDiff / 1000.0);
 
             lastNotifiedPercent = currentPercent;
