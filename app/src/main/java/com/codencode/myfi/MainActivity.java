@@ -15,12 +15,13 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.codencode.myfi.filereader.model.FileEntry;
 import com.codencode.myfi.filereader.picker.FolderPickerHandler;
-import com.codencode.myfi.filereader.storage.DirectoryManager;
 import com.codencode.myfi.server.FileServer;
 import com.codencode.myfi.core.network.LocalAddressProvider;
 import com.codencode.myfi.core.network.QrCodeGenerator;
+import com.codencode.myfi.feature.send.data.SafShareFolderRepository;
+import com.codencode.myfi.feature.send.data.ShareFolderRepository;
+import com.codencode.myfi.feature.send.domain.SharedFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int PORT = 8080;
     private boolean serverState = false;
 
-    private DirectoryManager directoryManager;
+    private ShareFolderRepository shareFolderRepository;
     private TextView tvFileList, tvServerStatus, tvTransferSpeed;
     private FolderPickerHandler folderPickerHandler;
 
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Initialize UI and Logic
-        directoryManager = new DirectoryManager(this);
+        shareFolderRepository = new SafShareFolderRepository(this);
         //tvFileList = findViewById(R.id.tv_file_list);
         tvServerStatus = findViewById(R.id.serverStatus);
         tvTransferSpeed = findViewById(R.id.tv_transfer_speed);
@@ -142,21 +143,19 @@ public class MainActivity extends AppCompatActivity {
         getContentResolver().takePersistableUriPermission(uri, takeFlags);
 
         // 3. Delegate the data fetching to the Manager
-        List<FileEntry> fileNames = directoryManager.getAllFileNames(uri);
+        List<SharedFile> sharedFiles = shareFolderRepository.listSharedFiles(uri);
 
         // 4. Update the UI
-        updateUI(fileNames);
+        updateUI(sharedFiles);
     }
 
-    private void updateUI(List<FileEntry> fileEntries) {
-        if (fileEntries.isEmpty()) {
+    private void updateUI(List<SharedFile> sharedFiles) {
+        if (sharedFiles.isEmpty()) {
             //tvFileList.setText("No files found in this folder.");
             return;
         }
 
-        helloWorldServer.setFileMap(fileEntries);
-
-        //tvFileList.setText("" + fileEntries.size() + " files are being shared.");
+        helloWorldServer.setFileMap(sharedFiles);
     }
 
     @Override

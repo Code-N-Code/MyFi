@@ -6,7 +6,7 @@ import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
 import android.content.Context;
 import android.net.Uri;
 
-import com.codencode.myfi.filereader.model.FileEntry;
+import com.codencode.myfi.feature.send.domain.SharedFile;
 import com.codencode.myfi.server.RouteHandler;
 
 import java.io.FileNotFoundException;
@@ -17,9 +17,9 @@ import fi.iki.elonen.NanoHTTPD;
 
 public class DownloadHandler implements RouteHandler {
     private final Context context;
-    private final List<FileEntry> fileEntryList;
+    private final List<SharedFile> fileEntryList;
 
-    public DownloadHandler(Context context, List<FileEntry> fileEntryList) {
+    public DownloadHandler(Context context, List<SharedFile> fileEntryList) {
         this.context = context;
         this.fileEntryList = fileEntryList;
     }

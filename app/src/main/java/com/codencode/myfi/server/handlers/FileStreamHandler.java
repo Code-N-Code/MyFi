@@ -4,7 +4,7 @@ import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
 
 import android.content.Context;
 
-import com.codencode.myfi.filereader.model.FileEntry;
+import com.codencode.myfi.feature.send.domain.SharedFile;
 import com.codencode.myfi.server.RouteHandler;
 import com.codencode.myfi.server.response.FileResponseFactory;
 import com.codencode.myfi.ui.ProgressCallback;
@@ -16,10 +16,10 @@ import fi.iki.elonen.NanoHTTPD;
 
 public class FileStreamHandler implements RouteHandler {
     private final Context context;
-    private final List<FileEntry> fileEntryList;
+    private final List<SharedFile> fileEntryList;
     private final ProgressCallback uiCallback;
 
-    public FileStreamHandler(Context context, List<FileEntry> fileEntryList, ProgressCallback uiCallback) {
+    public FileStreamHandler(Context context, List<SharedFile> fileEntryList, ProgressCallback uiCallback) {
         this.context = context;
         this.fileEntryList = fileEntryList;
         this.uiCallback = uiCallback;
@@ -34,7 +34,7 @@ public class FileStreamHandler implements RouteHandler {
             try {
                 int index = Integer.parseInt(idParams.get(0));
                 if (index >= 0 && index < fileEntryList.size()) {
-                    FileEntry selectedEntry = fileEntryList.get(index);
+                    SharedFile selectedEntry = fileEntryList.get(index);
                     return FileResponseFactory.createResponse(context, selectedEntry, uiCallback);
                 }
             } catch (NumberFormatException ignored) {}
