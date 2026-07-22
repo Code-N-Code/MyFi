@@ -19,7 +19,8 @@ import com.codencode.myfi.filereader.model.FileEntry;
 import com.codencode.myfi.filereader.picker.FolderPickerHandler;
 import com.codencode.myfi.filereader.storage.DirectoryManager;
 import com.codencode.myfi.server.FileServer;
-import com.codencode.myfi.utils.NetworkUtility;
+import com.codencode.myfi.core.network.LocalAddressProvider;
+import com.codencode.myfi.core.network.QrCodeGenerator;
 
 import java.io.IOException;
 import java.util.List;
@@ -111,11 +112,12 @@ public class MainActivity extends AppCompatActivity {
             serverState = true;
             serverStatusView.setBackgroundResource(android.R.color.holo_green_light);
             serverOnOffButton.setImageResource(R.drawable.power_on_state);
-            Bitmap bitmap = NetworkUtility.generateQRCode("http://" + NetworkUtility.getHotspotIPAddress() + ":" + PORT);
+            String serverAddress = LocalAddressProvider.getHotspotIpv4Address();
+            Bitmap bitmap = QrCodeGenerator.generate("http://" + serverAddress + ":" + PORT);
             qrCodeView.setImageBitmap(bitmap);
 
             Log.d("NanoHTTPD", "Server started on port " + PORT);
-            Toast.makeText(this, "Server started at: " + NetworkUtility.getHotspotIPAddress() + ":" + PORT, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Server started at: " + serverAddress + ":" + PORT, Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             serverState = false;
             serverOnOffButton.setImageResource(R.drawable.power_off_state);

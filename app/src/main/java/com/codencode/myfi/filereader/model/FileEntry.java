@@ -4,7 +4,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.codencode.myfi.utils.FileUtility;
+import com.codencode.myfi.core.format.FileSizeFormatter;
 
 public final class FileEntry {
 
@@ -39,7 +39,7 @@ public final class FileEntry {
     public int getId()                      { return id; }
 
     public String getSize() {
-        return FileUtility.formatSize(sizeBytes);
+        return FileSizeFormatter.format(sizeBytes);
     }
 
     @NonNull

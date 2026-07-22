@@ -1,4 +1,4 @@
-package com.codencode.myfi.utils;
+package com.codencode.myfi.core.io;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
