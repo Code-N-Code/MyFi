@@ -1,29 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0d6efd">
+
     <title>CodeNCode Server</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #1a73e8; border-bottom: 2px solid #e8eaed; padding-bottom: 10px; }
-        .file-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f1f3f4; transition: background 0.2s; }
-        .file-item:hover { background: #f8f9fa; }
-        .file-link { text-decoration: none; color: #3c4043; font-weight: 500; flex-grow: 1; }
-        .file-size { color: #70757a; font-size: 0.9em; }
+        body {
+            background: #f4f7fb;
+        }
+
+        .app-shell {
+            max-width: 1100px;
+        }
+
+        .brand-icon,
+        .file-icon {
+            display: inline-grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
+        .brand-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            color: #0a9b69;
+            background: #eafaf3;
+            font-size: 1.45rem;
+        }
+
+        .file-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            color: #0d6efd;
+            background: #eef4ff;
+            font-size: 1.25rem;
+        }
+
+        .min-w-0,
+        .file-name {
+            min-width: 0;
+        }
+
+        .file-link {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-row:hover {
+            background: #f8faff;
+        }
+
+        .search-wrap {
+            max-width: 340px;
+        }
+
+        .empty-state {
+            min-height: 260px;
+        }
+
+        @media (max-width: 575.98px) {
+            .app-shell {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .brand-subtitle,
+            .connection-text,
+            .refresh-text,
+            .desktop-size {
+                display: none;
+            }
+
+            .search-wrap {
+                max-width: none;
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>Available Files</h1>
-    <div class="list">
-        {{#files}} <div class="file-item">
-            <a class="file-link" href="/get-file?id={{id}}">{{name}}</a>
-            <span class="file-size">{{size}}</span>
+<header class="bg-white border-bottom sticky-top">
+    <div class="container-fluid app-shell py-3">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3 min-w-0">
+                <div class="brand-icon" aria-hidden="true">
+                    <i class="bi bi-wifi"></i>
+                </div>
+
+                <div class="min-w-0">
+                    <h1 class="h5 fw-bold mb-0 text-truncate">MyFi Server</h1>
+                    <p class="brand-subtitle small text-secondary mb-0">
+                        Share files from Android over Wi-Fi
+                    </p>
+                </div>
+            </div>
+
+            <div class="badge rounded-pill text-bg-success-subtle text-success-emphasis border border-success-subtle px-3 py-2">
+                <i class="bi bi-circle-fill me-1" style="font-size: 0.55rem;"></i>
+                <span class="connection-text">Connected</span>
+                <span class="d-sm-none">Online</span>
+            </div>
         </div>
-        {{/files}}
-        {{^files}} <p>No files found on device.</p>
-        {{/files}}
     </div>
-</div>
+</header>
+
+<main class="container-fluid app-shell py-3 py-md-4">
+    <section class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom p-3 p-md-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-2 fw-semibold min-w-0">
+                    <i class="bi bi-folder2-open"></i>
+                    <span>Shared Folder</span>
+                    <span class="text-secondary">/</span>
+                    <span class="text-primary text-truncate">Available Files</span>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="window.location.reload()"
+                >
+                    <i class="bi bi-arrow-clockwise"></i>
+                    <span class="refresh-text ms-1">Refresh</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-body-tertiary border-bottom p-3">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="text-secondary small">
+                    <span id="visibleCount">0</span>
+                    <span id="itemLabel">items</span>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <div class="input-group search-wrap">
+                        <span class="input-group-text bg-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input
+                            id="fileSearch"
+                            type="search"
+                            class="form-control"
+                            placeholder="Search files"
+                            autocomplete="off"
+                            aria-label="Search files"
+                        >
+                    </div>
+
+                    <select
+                        id="sortFiles"
+                        class="form-select"
+                        aria-label="Sort files"
+                    >
+                        <option value="name-asc">Name A-Z</option>
+                        <option value="name-desc">Name Z-A</option>
+                        <option value="size-asc">Size: smallest</option>
+                        <option value="size-desc">Size: largest</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="fileList" class="list-group list-group-flush">
+            {{#files}}
+            <div
+                class="file-row list-group-item px-3 px-md-4 py-3"
+                data-file-name="{{name}}"
+                data-file-size="{{size}}"
+            >
+                <div class="d-flex align-items-center gap-3">
+                    <div class="file-icon" aria-hidden="true">
+                        <i class="bi bi-file-earmark"></i>
+                    </div>
+
+                    <div class="file-name flex-grow-1">
+                        <a
+                            class="file-link d-block fw-semibold text-dark text-decoration-none"
+                            href="/get-file?id={{id}}"
+                            title="{{name}}"
+                        >
+                            {{name}}
+                        </a>
+
+                        <div class="small text-secondary mt-1">
+                            <span class="file-type">File</span>
+                            <span class="mx-1">&bull;</span>
+                            <span>{{size}}</span>
+                        </div>
+                    </div>
+
+                    <div class="desktop-size text-secondary small text-nowrap">
+                        {{size}}
+                    </div>
+
+                    <a
+                        class="btn btn-outline-primary btn-sm"
+                        href="/get-file?id={{id}}"
+                        download
+                        aria-label="Download {{name}}"
+                        title="Download {{name}}"
+                    >
+                        <i class="bi bi-download"></i>
+                    </a>
+                </div>
+            </div>
+            {{/files}}
+
+            {{^files}}
+            <div class="empty-state d-flex flex-column align-items-center justify-content-center text-center text-secondary p-4">
+                <i class="bi bi-folder2-open display-5 mb-3"></i>
+                <h2 class="h6 fw-bold text-dark">No files found</h2>
+                <p class="mb-0">There are no files available on this device.</p>
+            </div>
+            {{/files}}
+        </div>
+
+        <div id="noSearchResults" class="empty-state d-none flex-column align-items-center justify-content-center text-center text-secondary p-4">
+            <i class="bi bi-search display-5 mb-3"></i>
+            <h2 class="h6 fw-bold text-dark">No matching files</h2>
+            <p class="mb-0">Try a different search term.</p>
+        </div>
+
+        <footer class="card-footer bg-white border-top text-secondary small p-3 p-md-4">
+            <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-info-circle mt-1"></i>
+                <span>
+                    Files are served directly from your Android device over the local Wi-Fi network.
+                </span>
+            </div>
+        </footer>
+    </section>
+</main>
+
+<script>
+    (() => {
+        const fileList = document.getElementById('fileList');
+        const fileRows = Array.from(fileList.querySelectorAll('.file-row'));
+        const searchInput = document.getElementById('fileSearch');
+        const sortSelect = document.getElementById('sortFiles');
+        const visibleCount = document.getElementById('visibleCount');
+        const itemLabel = document.getElementById('itemLabel');
+        const noSearchResults = document.getElementById('noSearchResults');
+
+        const typeMap = {
+            pdf: ['bi-file-earmark-pdf-fill', 'text-danger', 'PDF'],
+            jpg: ['bi-file-earmark-image-fill', 'text-success', 'JPG'],
+            jpeg: ['bi-file-earmark-image-fill', 'text-success', 'JPEG'],
+            png: ['bi-file-earmark-image-fill', 'text-success', 'PNG'],
+            gif: ['bi-file-earmark-image-fill', 'text-success', 'GIF'],
+            webp: ['bi-file-earmark-image-fill', 'text-success', 'WEBP'],
+            mp4: ['bi-file-earmark-play-fill', 'text-warning', 'MP4'],
+            mov: ['bi-file-earmark-play-fill', 'text-warning', 'MOV'],
+            avi: ['bi-file-earmark-play-fill', 'text-warning', 'AVI'],
+            mp3: ['bi-file-earmark-music-fill', 'text-primary', 'MP3'],
+            wav: ['bi-file-earmark-music-fill', 'text-primary', 'WAV'],
+            pdf: ['bi-file-earmark-pdf-fill', 'text-danger', 'PDF'],
+            doc: ['bi-file-earmark-word-fill', 'text-primary', 'DOC'],
+            docx: ['bi-file-earmark-word-fill', 'text-primary', 'DOCX'],
+            xls: ['bi-file-earmark-excel-fill', 'text-success', 'XLS'],
+            xlsx: ['bi-file-earmark-excel-fill', 'text-success', 'XLSX'],
+            ppt: ['bi-file-earmark-slides-fill', 'text-warning', 'PPT'],
+            pptx: ['bi-file-earmark-slides-fill', 'text-warning', 'PPTX'],
+            zip: ['bi-file-earmark-zip-fill', 'text-secondary', 'ZIP'],
+            rar: ['bi-file-earmark-zip-fill', 'text-secondary', 'RAR'],
+            txt: ['bi-file-earmark-text-fill', 'text-primary', 'TXT'],
+            csv: ['bi-file-earmark-spreadsheet-fill', 'text-success', 'CSV'],
+            json: ['bi-file-earmark-code-fill', 'text-secondary', 'JSON'],
+            xml: ['bi-file-earmark-code-fill', 'text-secondary', 'XML'],
+            html: ['bi-file-earmark-code-fill', 'text-secondary', 'HTML'],
+            css: ['bi-file-earmark-code-fill', 'text-secondary', 'CSS'],
+            js: ['bi-file-earmark-code-fill', 'text-secondary', 'JS'],
+            kt: ['bi-file-earmark-code-fill', 'text-secondary', 'KT'],
+            java: ['bi-file-earmark-code-fill', 'text-secondary', 'JAVA']
+        };
+
+        const parseSize = (value) => {
+            if (!value) return 0;
+
+            const match = value.trim().toUpperCase().match(/^([\d.]+)\s*(B|KB|MB|GB|TB)?$/);
+            if (!match) return 0;
+
+            const amount = Number.parseFloat(match[1]);
+            const unit = match[2] || 'B';
+            const multipliers = {
+                B: 1,
+                KB: 1024,
+                MB: 1024 ** 2,
+                GB: 1024 ** 3,
+                TB: 1024 ** 4
+            };
+
+            return amount * multipliers[unit];
+        };
+
+        const applyFileIcons = () => {
+            fileRows.forEach((row) => {
+                const fileName = row.dataset.fileName || '';
+                const extension = fileName.includes('.')
+                    ? fileName.split('.').pop().toLowerCase()
+                    : '';
+
+                const [iconClass, colorClass, label] = typeMap[extension] || [
+                    'bi-file-earmark-fill',
+                    'text-secondary',
+                    extension ? extension.toUpperCase() : 'FILE'
+                ];
+
+                const icon = row.querySelector('.file-icon i');
+                const type = row.querySelector('.file-type');
+
+                icon.className = `bi ${iconClass} ${colorClass}`;
+                type.textContent = label;
+            });
+        };
+
+        const updateCount = () => {
+            const count = fileRows.filter((row) => !row.classList.contains('d-none')).length;
+            visibleCount.textContent = count;
+            itemLabel.textContent = count === 1 ? 'item' : 'items';
+
+            const hasFiles = fileRows.length > 0;
+            noSearchResults.classList.toggle('d-none', !hasFiles || count > 0);
+            noSearchResults.classList.toggle('d-flex', hasFiles && count === 0);
+        };
+
+        const filterFiles = () => {
+            const query = searchInput.value.trim().toLowerCase();
+
+            fileRows.forEach((row) => {
+                const fileName = (row.dataset.fileName || '').toLowerCase();
+                row.classList.toggle('d-none', !fileName.includes(query));
+            });
+
+            updateCount();
+        };
+
+        const sortFiles = () => {
+            const mode = sortSelect.value;
+            const sortedRows = [...fileRows].sort((a, b) => {
+                const nameA = (a.dataset.fileName || '').toLowerCase();
+                const nameB = (b.dataset.fileName || '').toLowerCase();
+                const sizeA = parseSize(a.dataset.fileSize);
+                const sizeB = parseSize(b.dataset.fileSize);
+
+                switch (mode) {
+                    case 'name-desc':
+                        return nameB.localeCompare(nameA);
+                    case 'size-asc':
+                        return sizeA - sizeB;
+                    case 'size-desc':
+                        return sizeB - sizeA;
+                    case 'name-asc':
+                    default:
+                        return nameA.localeCompare(nameB);
+                }
+            });
+
+            sortedRows.forEach((row) => fileList.appendChild(row));
+        };
+
+        applyFileIcons();
+        updateCount();
+
+        searchInput.addEventListener('input', filterFiles);
+        sortSelect.addEventListener('change', sortFiles);
+    })();
+</script>
 </body>
 </html>
