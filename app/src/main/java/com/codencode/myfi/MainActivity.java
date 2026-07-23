@@ -16,12 +16,12 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.codencode.myfi.filereader.picker.FolderPickerHandler;
-import com.codencode.myfi.server.FileServer;
 import com.codencode.myfi.core.network.LocalAddressProvider;
 import com.codencode.myfi.core.network.QrCodeGenerator;
 import com.codencode.myfi.feature.send.data.SafShareFolderRepository;
 import com.codencode.myfi.feature.send.data.ShareFolderRepository;
 import com.codencode.myfi.feature.send.domain.SharedFile;
+import com.codencode.myfi.feature.send.server.ShareServer;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     // Hello World test
-    private FileServer helloWorldServer;
+    private ShareServer shareServer;
     public static final int PORT = 8080;
     private boolean serverState = false;
 
@@ -80,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
                 stopServer();
             }
         });
-        helloWorldServer = new FileServer(PORT, this);
-        helloWorldServer.setEventListener(
+        shareServer = new ShareServer(PORT, this);
+        shareServer.setDownloadProgressListener(
                 (percentage, speed) -> {
                     if(percentage == 100) {
                         //tvFileList.setText("File transfer Complete");
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startServer() {
         try {
-            helloWorldServer.start();
+            shareServer.start();
             serverState = true;
             serverStatusView.setBackgroundResource(android.R.color.holo_green_light);
             serverOnOffButton.setImageResource(R.drawable.power_on_state);
@@ -128,8 +128,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopServer() {
-        if (helloWorldServer != null) {
-            helloWorldServer.stop();
+        if (shareServer != null) {
+            shareServer.stop();
             serverState = false;
             serverOnOffButton.setImageResource(R.drawable.power_off_state);
             serverStatusView.setBackgroundResource(android.R.color.holo_red_light);
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        helloWorldServer.setFileMap(sharedFiles);
+        shareServer.setSharedFiles(sharedFiles);
     }
 
     @Override
