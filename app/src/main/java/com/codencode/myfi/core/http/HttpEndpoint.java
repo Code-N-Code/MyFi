@@ -1,8 +1,7 @@
-package com.codencode.myfi.server;
-
+package com.codencode.myfi.core.http;
 
 import fi.iki.elonen.NanoHTTPD;
 
-public interface RouteHandler {
+public interface HttpEndpoint {
     NanoHTTPD.Response handle(NanoHTTPD.IHTTPSession session);
 }

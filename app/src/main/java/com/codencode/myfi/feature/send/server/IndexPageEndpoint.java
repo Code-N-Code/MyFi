@@ -1,11 +1,11 @@
-package com.codencode.myfi.server.handlers;
+package com.codencode.myfi.feature.send.server;
 
 import static fi.iki.elonen.NanoHTTPD.newFixedLengthResponse;
 
 import android.content.Context;
 
+import com.codencode.myfi.core.http.HttpEndpoint;
 import com.codencode.myfi.feature.send.domain.SharedFile;
-import com.codencode.myfi.server.RouteHandler;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
@@ -19,36 +19,32 @@ import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
 
-public class IndexHandler implements RouteHandler {
+public class IndexPageEndpoint implements HttpEndpoint {
     private final Context context;
-    private final List<SharedFile> fileEntryList;
+    private final List<SharedFile> sharedFiles;
 
-    public IndexHandler(Context context, List<SharedFile> fileEntryList) {
+    public IndexPageEndpoint(Context context, List<SharedFile> sharedFiles) {
         this.context = context;
-        this.fileEntryList = fileEntryList;
+        this.sharedFiles = sharedFiles;
     }
 
     @Override
     public NanoHTTPD.Response handle(NanoHTTPD.IHTTPSession session) {
-        // 1. Prepare the Data Map
         Map<String, Object> scope = new HashMap<>();
-
-        // Mustache needs a list of objects/maps it can read
-        // We'll pass fileEntryList directly
-        scope.put("files", fileEntryList);
-
+        scope.put("files", sharedFiles);
 
         try {
-            // 2. Load the Template from Assets
-            MustacheFactory mf = new DefaultMustacheFactory();
-            Mustache mustache = mf.compile(new InputStreamReader(context.getAssets().open("index.mustache")), "index");
-            // 3. Execute (Combine Data + Template)
+            MustacheFactory factory = new DefaultMustacheFactory();
+            Mustache mustache = factory.compile(
+                    new InputStreamReader(context.getAssets().open("index.mustache")),
+                    "index"
+            );
             StringWriter writer = new StringWriter();
             mustache.execute(writer, scope).flush();
 
             return newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "text/html", writer.toString());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
         }
     }
 }
