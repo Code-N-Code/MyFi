@@ -10,7 +10,7 @@ MyFi is a lightweight Android application that transforms your smartphone into a
 - High-Performance Streaming: Stream large files directly to the browser using buffered input streams.
 - QR Code Integration: Quickly share the server URL via generated QR codes.
 - Mustache Templating: Clean, dynamic HTML interface rendered on the fly.
-- Router Architecture: Decoupled handler pattern for a scalable and maintainable server.
+- Feature-based Architecture: Sending, server, and UI code are grouped by purpose so new features can be added without mixing concerns.
 
 ## Tech Stack
 
@@ -18,23 +18,31 @@ Based on the project's configuration (v8.13.2):
 
 - Server: NanoHTTPD (v2.3.1)
 - Templating: Mustache.java (v0.9.14)
-- Dependency Injection: Hilt (v2.51.1)
 - QR Generation: ZXing (v3.5.4)
 - UI: Material 3 (v1.13.0) & AndroidX AppCompat (v1.7.1)
-- Core: AndroidX Lifecycle (v2.10.0)
+- Screen State: AndroidX Lifecycle ViewModel & LiveData (v2.10.0)
 
 ## Project Architecture
 
-The project uses a Router/Handler pattern to separate server logic from routing:
+The project groups code by feature, with reusable code kept in `core`:
 ```
 com.codencode.myfi
-├── filereader/         # Logic for SAF and directory scanning
-├── server/             # NanoHTTPD Server implementation
-│   ├── handlers/       # Individual route logic (Index, Stream, Download)
-│   ├── RouteHandler    # Interface for all endpoints
-│   └── FileServer      # The main traffic controller (Router)
-└── ui/                 # Activity and Fragment logic
+├── MainActivity                 # Hosts the current feature screen
+├── core/                        # Cross-feature utilities
+│   ├── format/                  # File sizes and MIME types
+│   ├── http/                    # Shared HTTP endpoint contract
+│   ├── io/                      # Stream progress reporting
+│   ├── network/                 # Local IP address and QR generation
+│   └── storage/                 # Reusable document helpers
+└── feature/
+    └── send/                    # Everything required to share files
+        ├── data/                # SAF folder access
+        ├── domain/              # Shared-file and session state
+        ├── server/              # NanoHTTPD routes and download responses
+        └── ui/                  # Fragment, ViewModel, and UI state
 ```
+
+See [the architecture guide](docs/architecture.md) for package ownership, the Send flow, and guidance for adding Receive support.
 
 
 ## Installation & Setup
