@@ -6,7 +6,6 @@ import android.content.Context;
 
 import com.codencode.myfi.core.http.HttpEndpoint;
 import com.codencode.myfi.feature.send.domain.SharedFile;
-import com.codencode.myfi.ui.ProgressCallback;
 
 import java.util.List;
 import java.util.Map;
@@ -16,16 +15,16 @@ import fi.iki.elonen.NanoHTTPD;
 public class FileDownloadEndpoint implements HttpEndpoint {
     private final Context context;
     private final List<SharedFile> sharedFiles;
-    private final ProgressCallback progressCallback;
+    private final ShareServerEventListener progressListener;
 
     public FileDownloadEndpoint(
             Context context,
             List<SharedFile> sharedFiles,
-            ProgressCallback progressCallback
+            ShareServerEventListener progressListener
     ) {
         this.context = context;
         this.sharedFiles = sharedFiles;
-        this.progressCallback = progressCallback;
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -38,7 +37,7 @@ public class FileDownloadEndpoint implements HttpEndpoint {
                 int index = Integer.parseInt(idParameters.get(0));
                 if (index >= 0 && index < sharedFiles.size()) {
                     SharedFile selectedFile = sharedFiles.get(index);
-                    return FileDownloadResponseFactory.create(context, selectedFile, progressCallback);
+                    return FileDownloadResponseFactory.create(context, selectedFile, progressListener);
                 }
             } catch (NumberFormatException ignored) {
             }

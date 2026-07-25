@@ -10,7 +10,6 @@ import com.codencode.myfi.core.format.FileSizeFormatter;
 import com.codencode.myfi.core.format.MimeTypeResolver;
 import com.codencode.myfi.core.io.ProgressInputStream;
 import com.codencode.myfi.feature.send.domain.SharedFile;
-import com.codencode.myfi.ui.ProgressCallback;
 
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
@@ -27,7 +26,7 @@ public final class FileDownloadResponseFactory {
     public static NanoHTTPD.Response create(
             Context context,
             SharedFile file,
-            ProgressCallback progressCallback
+            ShareServerEventListener progressListener
     ) {
         try {
             InputStream rawStream = context.getContentResolver().openInputStream(file.getUri());
@@ -38,9 +37,9 @@ public final class FileDownloadResponseFactory {
                     file.getSizeBytes(),
                     (percentage, bytesRead, totalSize, speedBytesPerSec) ->
                             new Handler(Looper.getMainLooper()).post(() -> {
-                                if (progressCallback != null) {
+                                if (progressListener != null) {
                                     String speedText = FileSizeFormatter.format((long) speedBytesPerSec) + "/s";
-                                    progressCallback.updateProgressBar(percentage, speedText);
+                                    progressListener.onDownloadProgress(percentage, speedText);
                                 }
                             })
             );
