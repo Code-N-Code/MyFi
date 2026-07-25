@@ -1,6 +1,5 @@
 package com.codencode.myfi.feature.send.ui;
 
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,26 +14,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.codencode.myfi.R;
-import com.codencode.myfi.core.network.LocalAddressProvider;
-import com.codencode.myfi.core.network.QrCodeGenerator;
-import com.codencode.myfi.feature.send.data.SafShareFolderRepository;
-import com.codencode.myfi.feature.send.data.ShareFolderRepository;
-import com.codencode.myfi.feature.send.domain.SharedFile;
-import com.codencode.myfi.feature.send.server.ShareServer;
-
-import java.io.IOException;
-import java.util.List;
+import com.codencode.myfi.feature.send.domain.ShareSession;
+import com.codencode.myfi.feature.send.domain.TransferProgress;
 
 public class SendFragment extends Fragment {
-    private static final int PORT = 8080;
     private static final String TAG = "ShareServer";
 
-    private ShareServer shareServer;
-    private ShareFolderRepository shareFolderRepository;
     private FolderPickerContract folderPickerContract;
-    private boolean serverRunning;
+    private SendViewModel viewModel;
+    private String lastShownServerUrl;
 
     private TextView serverStatusText;
     private TextView transferSpeedText;
@@ -57,12 +48,11 @@ public class SendFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        shareFolderRepository = new SafShareFolderRepository(requireContext());
+        viewModel = new ViewModelProvider(this).get(SendViewModel.class);
         bindViews(view);
         configureActions(view);
-        configureServer();
-        initializeUi();
-        startServer();
+        viewModel.getUiState().observe(getViewLifecycleOwner(), this::render);
+        viewModel.onScreenStarted();
     }
 
     private void bindViews(View view) {
@@ -77,88 +67,63 @@ public class SendFragment extends Fragment {
     private void configureActions(View view) {
         Button selectFolderButton = view.findViewById(R.id.btn_select_folder);
         selectFolderButton.setOnClickListener(ignored -> folderPickerContract.openPicker());
-
-        serverToggleButton.setOnClickListener(ignored -> {
-            if (serverRunning) {
-                stopServer();
-            } else {
-                startServer();
-            }
-        });
+        serverToggleButton.setOnClickListener(ignored -> viewModel.onServerToggleClicked());
     }
 
-    private void configureServer() {
-        shareServer = new ShareServer(PORT, requireContext());
-        shareServer.setDownloadProgressListener((percentage, speed) -> {
-            if (percentage == 100) {
-                serverStatusText.setText("Online (Transfer Complete)");
-                transferProgressBar.setVisibility(View.GONE);
-                transferSpeedText.setVisibility(View.GONE);
-            } else {
-                serverStatusText.setText("Online (Transfer in Progress)");
-                transferProgressBar.setVisibility(View.VISIBLE);
-                transferProgressBar.setProgress(percentage);
-                transferSpeedText.setVisibility(View.VISIBLE);
-                transferSpeedText.setText(speed);
-            }
-        });
-    }
+    private void render(SendUiState state) {
+        ShareSession session = state.getShareSession();
+        serverStatusText.setText(state.getStatusMessage());
+        renderServerState(session);
+        renderTransfer(state.getTransferProgress());
 
-    private void initializeUi() {
-        transferProgressBar.setVisibility(View.GONE);
-        transferSpeedText.setVisibility(View.GONE);
-    }
-
-    private void startServer() {
-        try {
-            shareServer.start();
-            serverRunning = true;
-            serverStatusIndicator.setBackgroundResource(android.R.color.holo_green_light);
-            serverToggleButton.setImageResource(R.drawable.power_on_state);
-
-            String serverAddress = LocalAddressProvider.getHotspotIpv4Address();
-            Bitmap qrCode = QrCodeGenerator.generate("http://" + serverAddress + ":" + PORT);
-            qrCodeView.setImageBitmap(qrCode);
-
-            Log.d(TAG, "Server started on port " + PORT);
-            Toast.makeText(
-                    requireContext(),
-                    "Server started at: " + serverAddress + ":" + PORT,
-                    Toast.LENGTH_LONG
-            ).show();
-        } catch (IOException exception) {
-            serverRunning = false;
-            serverToggleButton.setImageResource(R.drawable.power_off_state);
-            serverStatusIndicator.setBackgroundResource(android.R.color.holo_red_light);
-            throw new RuntimeException(exception);
+        if (state.getQrCode() != null) {
+            qrCodeView.setImageBitmap(state.getQrCode());
         }
     }
 
-    private void stopServer() {
-        if (shareServer == null) {
+    private void renderServerState(ShareSession session) {
+        if (session.isServerRunning()) {
+            serverStatusIndicator.setBackgroundResource(android.R.color.holo_green_light);
+            serverToggleButton.setImageResource(R.drawable.power_on_state);
+            showServerStartedMessage(session.getServerUrl());
             return;
         }
 
-        shareServer.stop();
-        serverRunning = false;
-        serverToggleButton.setImageResource(R.drawable.power_off_state);
         serverStatusIndicator.setBackgroundResource(android.R.color.holo_red_light);
-        Log.d(TAG, "Server stopped.");
+        serverToggleButton.setImageResource(R.drawable.power_off_state);
+        lastShownServerUrl = null;
+    }
+
+    private void renderTransfer(@Nullable TransferProgress progress) {
+        if (progress == null) {
+            transferProgressBar.setVisibility(View.GONE);
+            transferSpeedText.setVisibility(View.GONE);
+            return;
+        }
+
+        transferProgressBar.setVisibility(View.VISIBLE);
+        transferProgressBar.setProgress(progress.getPercentage());
+        transferSpeedText.setVisibility(View.VISIBLE);
+        transferSpeedText.setText(progress.getSpeed());
+    }
+
+    private void showServerStartedMessage(@Nullable String serverUrl) {
+        if (serverUrl == null || serverUrl.equals(lastShownServerUrl)) {
+            return;
+        }
+
+        lastShownServerUrl = serverUrl;
+        Log.d(TAG, "Server started at " + serverUrl);
+        Toast.makeText(requireContext(), "Server started at: " + serverUrl, Toast.LENGTH_LONG).show();
     }
 
     private void handleFolderSelection(Uri uri) {
-        int takeFlags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
-        requireContext().getContentResolver().takePersistableUriPermission(uri, takeFlags);
-
-        List<SharedFile> sharedFiles = shareFolderRepository.listSharedFiles(uri);
-        if (!sharedFiles.isEmpty()) {
-            shareServer.setSharedFiles(sharedFiles);
-        }
+        viewModel.onFolderSelected(uri);
     }
 
     @Override
     public void onDestroy() {
+        viewModel.onScreenDestroyed();
         super.onDestroy();
-        stopServer();
     }
 }
