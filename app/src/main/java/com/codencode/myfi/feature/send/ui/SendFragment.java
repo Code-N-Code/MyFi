@@ -29,6 +29,7 @@ public class SendFragment extends Fragment {
 
     private TextView serverStatusText;
     private TextView transferSpeedText;
+    private TextView serverUrlText;
     private ImageButton serverToggleButton;
     private ImageView qrCodeView;
     private ProgressBar transferProgressBar;
@@ -58,6 +59,7 @@ public class SendFragment extends Fragment {
     private void bindViews(View view) {
         serverStatusText = view.findViewById(R.id.serverStatus);
         transferSpeedText = view.findViewById(R.id.tv_transfer_speed);
+        serverUrlText = view.findViewById(R.id.tv_server_url);
         serverToggleButton = view.findViewById(R.id.server_on_off_button);
         qrCodeView = view.findViewById(R.id.imgQRCode);
         transferProgressBar = view.findViewById(R.id.transfer_progress_bar);
@@ -78,6 +80,13 @@ public class SendFragment extends Fragment {
 
         if (state.getQrCode() != null) {
             qrCodeView.setImageBitmap(state.getQrCode());
+        }
+        
+        if (session.getServerUrl() != null) {
+            serverUrlText.setText(session.getServerUrl());
+            serverUrlText.setVisibility(View.VISIBLE);
+        } else {
+            serverUrlText.setVisibility(View.INVISIBLE);
         }
     }
 
