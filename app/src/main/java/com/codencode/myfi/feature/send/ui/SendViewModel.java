@@ -17,6 +17,7 @@ import com.codencode.myfi.feature.send.domain.TransferProgress;
 import java.io.IOException;
 
 public class SendViewModel extends AndroidViewModel {
+    private static final String OFFLINE_STATUS = "Server: Offline";
     private static final String READY_STATUS = "Server: Online (Ready to Share)";
     private static final String TRANSFER_IN_PROGRESS_STATUS = "Online (Transfer in Progress)";
     private static final String TRANSFER_COMPLETE_STATUS = "Online (Transfer Complete)";
@@ -26,7 +27,7 @@ public class SendViewModel extends AndroidViewModel {
 
     private ShareSession shareSession;
     private Bitmap qrCode;
-    private String statusMessage = READY_STATUS;
+    private String statusMessage = OFFLINE_STATUS;
     private TransferProgress transferProgress;
 
     public SendViewModel(@NonNull Application application) {
@@ -46,6 +47,7 @@ public class SendViewModel extends AndroidViewModel {
         try {
             shareSession = sessionManager.startSharing();
             qrCode = QrCodeGenerator.generate(shareSession.getServerUrl());
+            statusMessage = READY_STATUS;
             publishState();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
@@ -55,6 +57,7 @@ public class SendViewModel extends AndroidViewModel {
     public void onServerToggleClicked() {
         if (shareSession.isServerRunning()) {
             shareSession = sessionManager.stopSharing();
+            statusMessage = OFFLINE_STATUS;
         } else {
             onScreenStarted();
             return;
@@ -72,7 +75,7 @@ public class SendViewModel extends AndroidViewModel {
         shareSession = sessionManager.endSession();
         qrCode = null;
         transferProgress = null;
-        statusMessage = READY_STATUS;
+        statusMessage = OFFLINE_STATUS;
         publishState();
     }
 
